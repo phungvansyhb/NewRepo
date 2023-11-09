@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +5,601 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model agent_ca_ref {
+  id               String    @id @db.VarChar(255)
+  agent_id         String    @db.VarChar(255)
+  ca_id            String    @db.VarChar(255)
+  startdate        DateTime? @db.Timestamp(6)
+  enddate          DateTime? @db.Timestamp(6)
+  closedate        DateTime? @db.Timestamp(6)
+  created_ts       DateTime  @default(now()) @db.Timestamp(6)
+  created_by       String?   @db.VarChar(255)
+  last_modified_ts DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by String?   @db.VarChar(255)
+  deleted_ts       DateTime? @db.Timestamp(6)
+  deleted_by       String?   @db.VarChar(255)
+  version          Int       @default(1)
+}
+
+model area_code_time_zone {
+  code                 String  @id @db.VarChar(255)
+  country_code         String? @db.VarChar(255)
+  territory_code       String? @db.VarChar(255)
+  service_code         String? @db.VarChar(255)
+  country_calling_code String? @db.VarChar(255)
+  time_zone_from       String? @db.VarChar(255)
+  time_zone_to         String? @db.VarChar(255)
+  dts_from             String? @db.VarChar(255)
+  dts_to               String? @db.VarChar(255)
+}
+
+model country {
+  code             String  @id @db.VarChar(255)
+  country_issue    String? @db.VarChar(255)
+  country_issue_en String? @db.VarChar(255)
+  alpha2code       String? @db.VarChar(255)
+  alpha3code       String? @db.VarChar(255)
+  time_zone        String? @db.VarChar(255)
+  phone_code       String? @db.VarChar(255)
+  language_name    String? @db.VarChar(255)
+  language_code    String? @db.VarChar(255)
+}
+
+model currency {
+  code     String  @id @db.VarChar(255)
+  currency String? @db.VarChar(255)
+}
+
+model destination {
+  code                                                                   String                    @id @db.VarChar(255)
+  region_code                                                            String?                   @db.VarChar(255)
+  country_code                                                           String?                   @db.VarChar(255)
+  city_code                                                              String?                   @db.VarChar(255)
+  destination_arrival_rel_destination_arrival_rel_from_codeTodestination destination_arrival_rel[] @relation("destination_arrival_rel_from_codeTodestination")
+  destination_arrival_rel_destination_arrival_rel_to_codeTodestination   destination_arrival_rel[] @relation("destination_arrival_rel_to_codeTodestination")
+}
+
+model destination_arrival_rel {
+  from_code                                                  String      @db.VarChar(255)
+  to_code                                                    String      @db.VarChar(255)
+  destination_destination_arrival_rel_from_codeTodestination destination @relation("destination_arrival_rel_from_codeTodestination", fields: [from_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+  destination_destination_arrival_rel_to_codeTodestination   destination @relation("destination_arrival_rel_to_codeTodestination", fields: [to_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([from_code, to_code])
+}
+
+model email_sending_attachment {
+  id                    String                @id(map: "EMAIL_SENDING_ATTACHMENT_pkey") @db.Uuid
+  version               Int                   @default(1)
+  create_ts             DateTime?             @db.Timestamp(6)
+  created_by            String?               @db.VarChar(50)
+  update_ts             DateTime?             @db.Timestamp(6)
+  updated_by            String?               @db.VarChar(50)
+  delete_ts             DateTime?             @db.Timestamp(6)
+  deleted_by            String?               @db.VarChar(50)
+  message_id            String                @db.Uuid
+  content               Bytes?
+  content_file          String?
+  name                  String?               @db.VarChar(500)
+  content_id            String?               @db.VarChar(50)
+  disposition           String?               @db.VarChar(50)
+  text_encoding         String?               @db.VarChar(50)
+  sys_tenant_id         String?               @db.VarChar(255)
+  email_sending_message email_sending_message @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_email_attachment_message")
+
+  @@index([message_id], map: "email_attachment_message_idx")
+}
+
+model email_sending_message {
+  id                       String                     @id(map: "EMAIL_SENDING_MESSAGE_pkey") @db.Uuid
+  version                  Int                        @default(1)
+  create_ts                DateTime?                  @db.Timestamp(6)
+  created_by               String?                    @db.VarChar(50)
+  update_ts                DateTime?                  @db.Timestamp(6)
+  updated_by               String?                    @db.VarChar(50)
+  delete_ts                DateTime?                  @db.Timestamp(6)
+  deleted_by               String?                    @db.VarChar(50)
+  address_to               String?
+  address_from             String?                    @db.VarChar(100)
+  address_cc               String?
+  address_bcc              String?
+  subject                  String?                    @db.VarChar(500)
+  content_text             String?
+  content_text_file        String?
+  status                   Int?
+  date_sent                DateTime?                  @db.Timestamp(6)
+  attachments_name         String?
+  deadline                 DateTime?                  @db.Timestamp(6)
+  attempts_limit           Int?
+  attempts_made            Int?
+  email_headers            String?                    @db.VarChar(500)
+  body_content_type        String?                    @db.VarChar(50)
+  sys_tenant_id            String?                    @db.VarChar(255)
+  important                Boolean?
+  email_sending_attachment email_sending_attachment[]
+}
+
+model fare_attribute {
+  name String? @db.VarChar(255)
+  code String  @id @db.VarChar(255)
+}
+
+model fare_attribute_value {
+  id             Int     @id @default(autoincrement())
+  attribute_code String? @db.VarChar(255)
+  fare_rule_id   BigInt?
+  value          String? @db.VarChar(255)
+  note           String? @db.VarChar(255)
+  selection      String? @db.VarChar(255)
+  // fare_rule      fare_rule? @relation(fields: [fare_rule_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model fare_rule {
+  id       Int      @id @default(autoincrement())
+  name     String?  @db.VarChar(255)
+  type     String?  @db.VarChar(255)
+  active   Boolean?
+  datatype String?  @db.VarChar(255)
+  // fare_attribute_value fare_attribute_value[]
+}
+
+model flight_class {
+  id           Int     @id
+  flight_class String? @db.VarChar(255)
+}
+
+model flyway_schema_history {
+  installed_rank Int      @id(map: "flyway_schema_history_pk")
+  version        String?  @db.VarChar(50)
+  description    String   @db.VarChar(200)
+  type           String   @db.VarChar(20)
+  script         String   @db.VarChar(1000)
+  checksum       Int?
+  installed_by   String   @db.VarChar(100)
+  installed_on   DateTime @default(now()) @db.Timestamp(6)
+  execution_time Int
+  success        Boolean
+
+  @@index([success], map: "flyway_schema_history_s_idx")
+}
+
+model market {
+  id               String    @id @db.VarChar(255)
+  name             String?   @db.VarChar(256)
+  description      String?   @db.VarChar(256)
+  currencyid       String?   @db.VarChar(255)
+  status           String?   @db.VarChar(255)
+  inputter         String?   @db.VarChar(255)
+  dateinput        DateTime? @db.Timestamp(6)
+  created_ts       DateTime  @default(now()) @db.Timestamp(6)
+  created_by       String?   @db.VarChar(255)
+  last_modified_ts DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by String?   @db.VarChar(255)
+  deleted_ts       DateTime? @db.Timestamp(6)
+  deleted_by       String?   @db.VarChar(255)
+  version          Int       @default(1)
+  viewid           Int       @default(autoincrement())
+}
+
+model menu {
+  code             String    @id @db.VarChar(255)
+  title            String?   @db.VarChar(255)
+  active           Boolean?
+  parent_code      String?   @db.VarChar(255)
+  permission_code  String?   @db.VarChar(255)
+  sort             Int?
+  created_ts       DateTime  @default(now()) @db.Timestamp(6)
+  created_by       String?   @db.VarChar(255)
+  last_modified_ts DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by String?   @db.VarChar(255)
+  deleted_ts       DateTime? @db.Timestamp(6)
+  deleted_by       String?   @db.VarChar(255)
+  version          Int       @default(1)
+}
+
+model oauth_access_token {
+  authentication_id String  @id @db.VarChar(255)
+  token_id          String  @db.VarChar(255)
+  token             Bytes?
+  user_name         String? @db.VarChar(255)
+  client_id         String? @db.VarChar(255)
+  authentication    Bytes?
+  refresh_token     String? @db.VarChar(255)
+}
+
+model oauth_refresh_token {
+  token_id       String @id @db.VarChar(255)
+  token          Bytes?
+  authentication Bytes?
+}
+
+model organization {
+  id                String    @id @db.VarChar(255)
+  name              String?   @db.VarChar(256)
+  canumber          String?   @db.VarChar(255)
+  officeid          String?   @unique @db.VarChar(255)
+  iatanumber        String?   @unique @db.VarChar(255)
+  maxsubagent       Int?
+  timezone          String?   @db.VarChar(255)
+  countryid         String?   @db.VarChar(255)
+  provinceid        String?   @db.VarChar(255)
+  detailaddress     String?   @db.VarChar(1028)
+  phonecode         String?   @db.VarChar(255)
+  phonenumber       String?   @db.VarChar(255)
+  email             String?   @unique @db.VarChar(256)
+  languageid        String?   @db.VarChar(255)
+  zipcode           String?   @db.VarChar(10)
+  organization_type String?   @db.VarChar(255)
+  status            String?   @db.VarChar(255)
+  inputter          String?   @db.VarChar(255)
+  adminusername     String?   @db.VarChar(255)
+  agent_id          String?   @db.VarChar(255)
+  active_market_id  String?   @db.VarChar(255)
+  ca_id             String?   @db.VarChar(255)
+  startdate         DateTime? @db.Timestamp(6)
+  enddate           DateTime? @db.Timestamp(6)
+  closedate         DateTime? @db.Timestamp(6)
+  paymentfrequency  String?   @db.VarChar(255)
+  formpayment       String?   @db.VarChar(255)
+  docapply          String?   @db.VarChar(255)
+  companyname       String?   @db.VarChar(255)
+  currency          String?   @db.VarChar(255)
+  created_ts        DateTime  @default(now()) @db.Timestamp(6)
+  created_by        String?   @db.VarChar(255)
+  last_modified_ts  DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by  String?   @db.VarChar(255)
+  deleted_ts        DateTime? @db.Timestamp(6)
+  deleted_by        String?   @db.VarChar(255)
+  version           Int       @default(1)
+  has_admin         Boolean?  @default(false)
+  ca_type           String?   @db.VarChar(255)
+  sub_org_number    String?   @db.VarChar(255)
+  dirty             String?   @db.VarChar(255)
+  sub_count         String?   @db.VarChar(255)
+  ca_code           String?   @db.VarChar(255)
+  viewid            Int       @default(autoincrement())
+  lss_sign          String?   @db.VarChar(255)
+  acl_account_id    String?   @db.VarChar(255)
+}
+
+model organization_market {
+  id                 String    @id @db.VarChar(255)
+  organization_id    String?   @db.VarChar(255)
+  market_id          String?   @db.VarChar(255)
+  startdate          DateTime? @db.Timestamp(6)
+  enddate            DateTime? @db.Timestamp(6)
+  closedate          DateTime? @db.Timestamp(6)
+  created_ts         DateTime  @default(now()) @db.Timestamp(6)
+  created_by         String?   @db.VarChar(255)
+  last_modified_ts   DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by   String?   @db.VarChar(255)
+  deleted_ts         DateTime? @db.Timestamp(6)
+  deleted_by         String?   @db.VarChar(255)
+  version            Int       @default(1)
+  market_name        String?   @db.VarChar(255)
+  market_description String?   @db.VarChar(255)
+}
+
+model passenger_type {
+  id            Int     @id
+  passengerType String? @db.VarChar(255)
+  note          String? @db.VarChar(255)
+}
+
+model permission_action {
+  code                        String                        @id @db.VarChar(255)
+  name                        String?                       @db.VarChar(255)
+  service_id                  String?                       @default("TAP") @db.VarChar(255)
+  created_ts                  DateTime                      @default(now()) @db.Timestamp(6)
+  created_by                  String?                       @db.VarChar(255)
+  last_modified_ts            DateTime                      @default(now()) @db.Timestamp(6)
+  last_modified_by            String?                       @db.VarChar(255)
+  deleted_ts                  DateTime?                     @db.Timestamp(6)
+  deleted_by                  String?                       @db.VarChar(255)
+  version                     Int                           @default(1)
+  permission_component_action permission_component_action[]
+}
+
+model permission_component {
+  code                        String                        @id @db.VarChar(255)
+  name                        String?                       @db.VarChar(255)
+  order                       Int?                          @default(1)
+  service_id                  String?                       @default("TAP") @db.VarChar(255)
+  created_ts                  DateTime                      @default(now()) @db.Timestamp(6)
+  created_by                  String?                       @db.VarChar(255)
+  last_modified_ts            DateTime                      @default(now()) @db.Timestamp(6)
+  last_modified_by            String?                       @db.VarChar(255)
+  deleted_ts                  DateTime?                     @db.Timestamp(6)
+  deleted_by                  String?                       @db.VarChar(255)
+  version                     Int                           @default(1)
+  permission_component_action permission_component_action[]
+  role_permission_component   role_permission_component[]
+}
+
+model permission_component_action {
+  action_code          String               @db.VarChar(255)
+  component_code       String               @db.VarChar(255)
+  permission_action    permission_action    @relation(fields: [action_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+  permission_component permission_component @relation(fields: [component_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([action_code, component_code])
+}
+
+model permission_component_setting {
+  code             String    @db.VarChar(255)
+  name             String?   @db.VarChar(255)
+  user_type        String    @db.VarChar(255)
+  order            Int?      @default(1)
+  parent_code      String?   @db.VarChar(255)
+  components       String?
+  created_ts       DateTime  @default(now()) @db.Timestamp(6)
+  created_by       String?   @db.VarChar(255)
+  last_modified_ts DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by String?   @db.VarChar(255)
+  deleted_ts       DateTime? @db.Timestamp(6)
+  deleted_by       String?   @db.VarChar(255)
+  version          Int       @default(1)
+
+  @@id([code, user_type])
+}
+
+model persistent_logins {
+  series    String   @id @db.VarChar(64)
+  username  String   @db.VarChar(64)
+  token     String   @db.VarChar(64)
+  last_used DateTime @db.Timestamp(6)
+}
+
+model role {
+  id                        String                      @id @db.VarChar(255)
+  name                      String?                     @db.VarChar(255)
+  description               String?                     @db.VarChar(255)
+  active                    Boolean?                    @default(true)
+  sort                      Int?
+  user_type                 String                      @db.VarChar(255)
+  created_ts                DateTime                    @default(now()) @db.Timestamp(6)
+  created_by                String?                     @db.VarChar(255)
+  last_modified_ts          DateTime                    @default(now()) @db.Timestamp(6)
+  last_modified_by          String?                     @db.VarChar(255)
+  deleted_ts                DateTime?                   @db.Timestamp(6)
+  deleted_by                String?                     @db.VarChar(255)
+  version                   Int                         @default(1)
+  is_admin                  Boolean?                    @default(false)
+  role_permission_component role_permission_component[]
+}
+
+model role_permission_component {
+  role_id              String               @db.VarChar(255)
+  component_code       String               @db.VarChar(255)
+  permission_component permission_component @relation(fields: [component_code], references: [code], onDelete: NoAction, onUpdate: NoAction)
+  role                 role                 @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([role_id, component_code])
+}
+
+model role_user {
+  role_id String @db.VarChar(255)
+  user_id String @db.VarChar(255)
+
+  @@id([role_id, user_id])
+}
+
+model sec_resource_policy {
+  id                String            @id(map: "SEC_RESOURCE_POLICY_pkey") @db.Uuid
+  version           Int               @default(1)
+  create_ts         DateTime?         @db.Timestamp(6)
+  created_by        String?           @db.VarChar(50)
+  update_ts         DateTime?         @db.Timestamp(6)
+  updated_by        String?           @db.VarChar(50)
+  delete_ts         DateTime?         @db.Timestamp(6)
+  deleted_by        String?           @db.VarChar(50)
+  type_             String            @db.VarChar(255)
+  policy_group      String?           @db.VarChar(255)
+  resource_         String            @db.VarChar(1000)
+  action_           String            @db.VarChar(255)
+  effect            String            @db.VarChar(255)
+  role_id           String            @db.Uuid
+  sec_resource_role sec_resource_role @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_res_policy_role")
+}
+
+model sec_resource_role {
+  id                  String                @id(map: "SEC_RESOURCE_ROLE_pkey") @db.Uuid
+  version             Int                   @default(1)
+  create_ts           DateTime?             @db.Timestamp(6)
+  created_by          String?               @db.VarChar(50)
+  update_ts           DateTime?             @db.Timestamp(6)
+  updated_by          String?               @db.VarChar(50)
+  delete_ts           DateTime?             @db.Timestamp(6)
+  deleted_by          String?               @db.VarChar(50)
+  name                String                @db.VarChar(255)
+  code                String                @db.VarChar(255)
+  child_roles         String?
+  sys_tenant_id       String?               @db.VarChar(255)
+  description         String?
+  scopes              String?               @db.VarChar(1000)
+  sec_resource_policy sec_resource_policy[]
+}
+
+model sec_role_assignment {
+  id         String    @id(map: "SEC_ROLE_ASSIGNMENT_pkey") @db.Uuid
+  version    Int       @default(1)
+  create_ts  DateTime? @db.Timestamp(6)
+  created_by String?   @db.VarChar(50)
+  update_ts  DateTime? @db.Timestamp(6)
+  updated_by String?   @db.VarChar(50)
+  delete_ts  DateTime? @db.Timestamp(6)
+  deleted_by String?   @db.VarChar(50)
+  username   String    @db.VarChar(255)
+  role_code  String    @db.VarChar(255)
+  role_type  String    @db.VarChar(255)
+}
+
+model sec_row_level_policy {
+  id                 String             @id(map: "SEC_ROW_LEVEL_POLICY_pkey") @db.Uuid
+  version            Int                @default(1)
+  create_ts          DateTime?          @db.Timestamp(6)
+  created_by         String?            @db.VarChar(50)
+  update_ts          DateTime?          @db.Timestamp(6)
+  updated_by         String?            @db.VarChar(50)
+  delete_ts          DateTime?          @db.Timestamp(6)
+  deleted_by         String?            @db.VarChar(50)
+  type_              String             @db.VarChar(255)
+  action_            String             @db.VarChar(255)
+  entity_name        String             @db.VarChar(255)
+  where_clause       String?
+  join_clause        String?
+  script_            String?
+  role_id            String             @db.Uuid
+  sec_row_level_role sec_row_level_role @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_row_level_policy_role")
+}
+
+model sec_row_level_role {
+  id                   String                 @id(map: "SEC_ROW_LEVEL_ROLE_pkey") @db.Uuid
+  version              Int                    @default(1)
+  create_ts            DateTime?              @db.Timestamp(6)
+  created_by           String?                @db.VarChar(50)
+  update_ts            DateTime?              @db.Timestamp(6)
+  updated_by           String?                @db.VarChar(50)
+  delete_ts            DateTime?              @db.Timestamp(6)
+  deleted_by           String?                @db.VarChar(50)
+  name                 String                 @db.VarChar(255)
+  code                 String                 @db.VarChar(255)
+  child_roles          String?
+  sys_tenant_id        String?                @db.VarChar(255)
+  description          String?
+  sec_row_level_policy sec_row_level_policy[]
+}
+
+model sec_user_substitution {
+  id                   String    @id(map: "SEC_USER_SUBSTITUTION_pkey") @db.Uuid
+  version              Int       @default(1)
+  create_ts            DateTime? @db.Timestamp(6)
+  created_by           String?   @db.VarChar(50)
+  update_ts            DateTime? @db.Timestamp(6)
+  updated_by           String?   @db.VarChar(50)
+  delete_ts            DateTime? @db.Timestamp(6)
+  deleted_by           String?   @db.VarChar(50)
+  username             String    @db.VarChar(255)
+  substituted_username String    @db.VarChar(255)
+  start_date           DateTime? @db.Timestamp(6)
+  end_date             DateTime? @db.Timestamp(6)
+}
+
+model send_link {
+  id               String    @id @db.VarChar(255)
+  username         String?   @db.VarChar(255)
+  email            String?   @db.VarChar(255)
+  token            String?   @db.VarChar(255)
+  created_ts       DateTime  @default(now()) @db.Timestamp(6)
+  created_by       String?   @db.VarChar(255)
+  last_modified_ts DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by String?   @db.VarChar(255)
+  deleted_ts       DateTime? @db.Timestamp(6)
+  deleted_by       String?   @db.VarChar(255)
+  version          Int       @default(1)
+  apply            Boolean?  @default(false)
+}
+
+model user_ {
+  id                  String    @id @db.VarChar(255)
+  username            String    @db.VarChar(255)
+  email               String    @db.VarChar(255)
+  password            String?   @db.VarChar(255)
+  time_zone_id        String?   @db.VarChar(255)
+  office_id           String?   @db.VarChar(255)
+  user_type           String?   @db.VarChar(255)
+  status              String    @default("ACTIVE") @db.VarChar(255)
+  organization_id     String?   @db.VarChar(255)
+  active_market_id    String?   @db.VarChar(255)
+  agent_user_id       String?   @db.VarChar(255)
+  agent_com_id        String?   @db.VarChar(255)
+  ca_com_id           String?   @db.VarChar(255)
+  ca_user_id          String?   @db.VarChar(255)
+  fullname            String?   @db.VarChar(255)
+  shortname           String?   @db.VarChar(255)
+  phonenumber         String?   @db.VarChar(20)
+  lsssign             String?   @db.VarChar(255)
+  created_ts          DateTime  @default(now()) @db.Timestamp(6)
+  created_by          String?   @db.VarChar(255)
+  last_modified_ts    DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by    String?   @db.VarChar(255)
+  deleted_ts          DateTime? @db.Timestamp(6)
+  deleted_by          String?   @db.VarChar(255)
+  version             Int       @default(1)
+  role_id             String?   @db.VarChar(255)
+  dirty               String?   @db.VarChar(255)
+  is_admin            Boolean?  @default(false)
+  viewid              Int       @default(autoincrement())
+  sub_ca_name         String?   @db.VarChar(255)
+  phone_code          String?   @db.VarChar(255)
+  organization_status String?   @db.VarChar(255)
+
+  @@unique([user_type, email])
+  @@unique([user_type, username])
+}
+
+model user_authen_tracking_ {
+  user_id            String @id @db.VarChar(255)
+  failed_login_count Int?   @default(0)
+}
+
+model vnauser_market {
+  id                 String    @id @db.VarChar(255)
+  vna_user_id        String?   @db.VarChar(255)
+  market_id          String?   @db.VarChar(255)
+  startdate          DateTime? @db.Timestamp(6)
+  enddate            DateTime? @db.Timestamp(6)
+  closedate          DateTime? @db.Timestamp(6)
+  created_ts         DateTime  @default(now()) @db.Timestamp(6)
+  created_by         String?   @db.VarChar(255)
+  last_modified_ts   DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by   String?   @db.VarChar(255)
+  deleted_ts         DateTime? @db.Timestamp(6)
+  deleted_by         String?   @db.VarChar(255)
+  version            Int       @default(1)
+  market_name        String?   @db.VarChar(255)
+  market_description String?   @db.VarChar(255)
+}
+
+enum STATUS {
+  ACTIVE
+  INACTIVE
+}
+
+model news_category {
+  id               String    @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  name             String    @unique @db.VarChar(255)
+  description      String    @db.VarChar(255)
+  status           STATUS    @default(ACTIVE)
+  order            Int
+  created_ts       DateTime  @default(now()) @db.Timestamp(6)
+  created_by       String?   @db.VarChar(255)
+  last_modified_ts DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by String?   @db.VarChar(255)
+  deleted_ts       DateTime? @db.Timestamp(6)
+  deleted_by       String?   @db.VarChar(255)
+  version          Int       @default(1)
+  news             news[]
+}
+
+model news {
+  id               String         @id @db.Uuid @default(dbgenerated("gen_random_uuid()")) 
+  title            String         @unique @db.VarChar(255)
+  thumbnail        String         @db.VarChar(255)
+  description      String         @db.VarChar(255)
+  content          String         @db.Text
+  startdate        DateTime?      @db.Timestamp(6)
+  enddate          DateTime?      @db.Timestamp(6)
+  category_id      String         @db.Uuid
+  category         news_category? @relation(fields: [category_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  status           STATUS         @default(ACTIVE)
+  created_ts       DateTime       @default(now()) @db.Timestamp(6)
+  created_by       String?        @db.VarChar(255)
+  last_modified_ts DateTime       @default(now()) @db.Timestamp(6)
+  last_modified_by String?        @db.VarChar(255)
+  deleted_ts       DateTime?      @db.Timestamp(6)
+  deleted_by       String?        @db.VarChar(255)
+  version          Int            @default(1)
 }
