@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
-import { UpdateNewsDto } from './dto/update-news.dto';
+import { Prisma } from '@prisma/client';
 
 @Controller('news')
 export class NewsController {
@@ -13,22 +21,22 @@ export class NewsController {
   }
 
   @Get()
-  findAll() {
-    return this.newsService.findAll();
+  findAll(
+    @Query() params: { page: number; size: number; categoryName: string },
+  ) {
+    return this.newsService.findAll(params);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.newsService.findOne(+id);
+    return this.newsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNewsDto: UpdateNewsDto) {
-    return this.newsService.update(+id, updateNewsDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.newsService.remove(+id);
+  update(
+    @Param('id') id: string,
+    @Body() updateNewsDto: Partial<Prisma.newsCreateInput>,
+  ) {
+    return this.newsService.update(id, updateNewsDto);
   }
 }
