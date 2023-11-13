@@ -11,7 +11,7 @@ import { NewsCategoryModule } from './news-category/news-category.module';
 import { NewsModule } from './news/news.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
-
+import helmet from 'helmet';
 @Module({
   imports: [NewsCategoryModule, NewsModule, PrismaModule],
   controllers: [AppController],
@@ -20,7 +20,7 @@ import { PrismaService } from './prisma/prisma.service';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(AuthMiddleware)
+      .apply(helmet(), AuthMiddleware)
       .forRoutes({ path: '/*', method: RequestMethod.ALL });
   }
 }

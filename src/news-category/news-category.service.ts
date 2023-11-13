@@ -1,20 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateOrderDto } from './dto/updateOrderDto';
 import { LoggerService } from 'src/logger/logger.service';
-import { ContextService } from 'src/auth/context.service';
-
-@Injectable()
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { LoginedUser } from 'auth.middleware';
+@Injectable({ scope: Scope.REQUEST })
 export class NewsCategoryService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly logger: LoggerService,
-    private readonly context: ContextService,
+    @Inject(REQUEST) private request: Request,
   ) {}
 
   async create(createNewsCategoryDto: Prisma.news_categoryCreateInput) {
     try {
+      const currentUser = JSON.parse(
+        this.request.headers.data as string,
+      ) as LoginedUser;
       const existingCategory = await this.prismaService.news_category.findFirst(
         {
           where: { name: createNewsCategoryDto.name },
@@ -43,6 +47,7 @@ export class NewsCategoryService {
         data: {
           ...createNewsCategoryDto,
           order,
+          created_by: currentUser['additional-data'].username,
         },
       });
     } catch (error) {
@@ -78,6 +83,9 @@ export class NewsCategoryService {
     updateNewsCategoryDto: Prisma.news_categoryCreateInput,
   ) {
     try {
+      const currentUser = JSON.parse(
+        this.request.headers.data as string,
+      ) as LoginedUser;
       const existingCategory = await this.prismaService.news_category.findFirst(
         {
           where: { id: id },
@@ -93,7 +101,10 @@ export class NewsCategoryService {
 
       return this.prismaService.news_category.update({
         where: { id: id },
-        data: updateNewsCategoryDto,
+        data: {
+          ...updateNewsCategoryDto,
+          last_modified_by: currentUser['additional-data'].username,
+        },
       });
     } catch (error) {
       this.logger.error('Error in update method:', error);

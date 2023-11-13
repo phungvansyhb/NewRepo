@@ -51,7 +51,7 @@ export class AuthMiddleware implements NestMiddleware {
         const token = authorizationHeader.split(' ')[1];
 
         // const decodedToken = verify(token, `${process.env.SECRET_KEY}`, {
-        //   algorithms: ['RS256'],
+        //   algorithms: ['RS384'],
         // }) as LoginedUser;
 
         const decodedToken = decode(token) as LoginedUser;

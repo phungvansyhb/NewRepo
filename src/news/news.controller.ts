@@ -1,56 +1,73 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Query,
-  Req,
   ParseIntPipe,
+  Patch,
+  Post,
+  Query
 } from '@nestjs/common';
-import { NewsService } from './news.service';
-import { CreateNewsDto } from './dto/create-news.dto';
 import { Prisma } from '@prisma/client';
-import { Request } from 'express';
+import { Permissions } from 'src/roles/role.decorator';
+import { CreateNewsDto } from './dto/create-news.dto';
+import { NewsService } from './news.service';
 
 @Controller('news')
 export class NewsController {
-  constructor(private readonly newsService: NewsService) {}
+  constructor(private readonly newsService: NewsService) { }
 
   @Post()
-  create(@Body() createNewsDto: CreateNewsDto, @Req() req: Request) {
-    const currentUser = JSON.parse(req.headers.data as string);
-    return this.newsService.create(createNewsDto, currentUser);
+  @Permissions(['R_NEWS_UPDATE'])
+  create(@Body() createNewsDto: CreateNewsDto) {
+    return this.newsService.create(createNewsDto);
   }
 
-  @Get()
-  findAll(
+  // @Permissions(['R_NEWS_VIEW'])
+  // @Get("/findAll")
+  // findAll(
+  //   @Query('page', ParseIntPipe) page: number,
+  //   @Query('size', ParseIntPipe) size: number,
+  //   @Query('categoryName') categoryName: string,
+  // ) {
+  //   const params = {
+  //     page: page || 1,
+  //     size: size || 10,
+  //     categoryName: categoryName,
+  //   };
+  //   return this.newsService.findAll(params);
+  // }
+
+  @Permissions(['R_NEWS_VIEW'])
+  @Get("/searchAll")
+  searchAll(
     @Query('page', ParseIntPipe) page: number,
     @Query('size', ParseIntPipe) size: number,
     @Query('categoryName') categoryName: string,
-    @Req() req: Request,
   ) {
     const params = {
       page: page || 1,
       size: size || 10,
       categoryName: categoryName,
     };
-    const currentUser = JSON.parse(req.headers.data as string);
-    return this.newsService.findAll(params, currentUser);
+    return this.newsService.searchAll(params);
   }
 
-  @Get(':id')
+  @Permissions(['R_NEWS_VIEW'])
+  @Get('/findById/:id')
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.newsService.findOne(id);
   }
 
-  @Get(':title')
+
+  @Permissions(['R_NEWS_VIEW'])
+  @Get('/findByTitle/:title')
   find(@Param('title') title: string) {
-    return this.newsService.findByTitle(title);
+    return this.newsService.searchByTitle(title);
   }
 
   @Patch(':id')
+  @Permissions(['R_NEWS_UPDATE'])
   update(
     @Param('id') id: string,
     @Body() updateNewsDto: Partial<Prisma.newsCreateInput>,
