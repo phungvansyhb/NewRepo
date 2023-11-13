@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { LoggerService } from 'src/logger/logger.service';
+import { LoginedUser } from 'auth.middleware';
 
 @Injectable()
 export class NewsService {
@@ -10,9 +11,9 @@ export class NewsService {
     private readonly logger: LoggerService,
   ) {}
 
-  async create(createNewsDto: CreateNewsDto) {
+  async create(createNewsDto: CreateNewsDto, user: LoginedUser) {
     try {
-      const { category_id, ...data } = createNewsDto;
+      const { category_id, assignedUsers, ...data } = createNewsDto;
       const existingNewsName = await this.prismaService.news.findFirst({
         where: { title: createNewsDto.title },
       });
@@ -25,11 +26,12 @@ export class NewsService {
       return this.prismaService.news.create({
         data: {
           ...data,
+          created_by: user?.['additional-data'].username,
           category: {
             connect: { id: category_id },
           },
           users: {
-            connect: createNewsDto.assignedUsers?.map((item: string) => ({
+            connect: assignedUsers?.map((item: string) => ({
               id: item,
             })),
           },
@@ -41,19 +43,27 @@ export class NewsService {
     }
   }
 
-  async findAll(params: { page: number; size: number; categoryName?: string }) {
+  async findAll(
+    params: { page: number; size: number; categoryName?: string },
+    user: LoginedUser,
+  ) {
     try {
       /**
        * TODO filter by user called request
        */
+      // const idRequest = user['additional-data'].id;
       const data = await this.prismaService.news.findMany({
         take: params.size,
-        skip: params.page * params.size,
+        skip: (params.page - 1) * params.size,
         orderBy: { last_modified_ts: 'desc' },
+        include: { category: true },
         where: {
           category: {
-            name: params.categoryName,
+            name: params.categoryName ?? undefined,
           },
+          // users: {
+          //   some: { id: idRequest },
+          // },
         },
       });
       const count = await this.prismaService.news.count();
@@ -71,6 +81,16 @@ export class NewsService {
     try {
       return this.prismaService.news.findFirstOrThrow({
         where: { id: id },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
+  findByTitle(title: string) {
+    try {
+      return this.prismaService.news.findFirstOrThrow({
+        where: { title: title },
       });
     } catch (error) {
       this.logger.error(error);

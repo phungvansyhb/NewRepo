@@ -7,10 +7,34 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    super();
+    super({
+      log: [
+        {
+          emit: 'event',
+          level: 'query',
+        },
+        {
+          emit: 'stdout',
+          level: 'error',
+        },
+        {
+          emit: 'stdout',
+          level: 'info',
+        },
+        {
+          emit: 'stdout',
+          level: 'warn',
+        },
+      ],
+    });
   }
 
   async onModuleInit() {
+    (this as any).$on('query', (e: any) => {
+      console.log('Query: ' + e.query);
+      console.log('Params: ' + e.params);
+      console.log('Duration: ' + e.duration + 'ms');
+    });
     await this.$connect();
   }
 
