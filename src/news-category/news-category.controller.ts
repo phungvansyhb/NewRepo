@@ -12,15 +12,23 @@ import {
 import { NewsCategoryService } from './news-category.service';
 import { Prisma } from '@prisma/client';
 import { UpdateOrderDto } from './dto/updateOrderDto';
-import { Request } from 'express';
 import { Permissions } from 'src/roles/role.decorator';
+import { ApiTags , ApiHeader } from '@nestjs/swagger'
+
+
+@ApiTags('News-category')
 @Controller('news-category')
+@ApiHeader({
+  name: 'Authorization',
+  description: 'Bearer token',
+})
 export class NewsCategoryController {
-  constructor(private readonly newsCategoryService: NewsCategoryService) {}
+  constructor(private readonly newsCategoryService: NewsCategoryService) { }
 
   @Post()
   @Version('1')
   @Permissions(['R_CATEGORY_EXECUTE'])
+  
   async create(@Body() createNewsCategoryDto: Prisma.news_categoryCreateInput) {
     return this.newsCategoryService.create(createNewsCategoryDto);
   }
@@ -45,7 +53,7 @@ export class NewsCategoryController {
   async updateOrder(@Body() data: UpdateOrderDto) {
     return this.newsCategoryService.updateOrder(data);
   }
-  
+
   @Patch(':id')
   @Permissions(['R_CATEGORY_EXECUTE'])
   async update(

@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+
 model agent_ca_ref {
   id               String    @id @db.VarChar(255)
   agent_id         String    @db.VarChar(255)
@@ -503,38 +505,38 @@ model send_link {
 }
 
 model user_ {
-  id                  String         @id @db.VarChar(255)
-  username            String         @db.VarChar(255)
-  email               String         @db.VarChar(255)
-  password            String?        @db.VarChar(255)
-  time_zone_id        String?        @db.VarChar(255)
-  office_id           String?        @db.VarChar(255)
-  user_type           String?        @db.VarChar(255)
-  status              String         @default("ACTIVE") @db.VarChar(255)
-  organization_id     String?        @db.VarChar(255)
-  active_market_id    String?        @db.VarChar(255)
-  agent_user_id       String?        @db.VarChar(255)
-  agent_com_id        String?        @db.VarChar(255)
-  ca_com_id           String?        @db.VarChar(255)
-  ca_user_id          String?        @db.VarChar(255)
-  fullname            String?        @db.VarChar(255)
-  shortname           String?        @db.VarChar(255)
-  phonenumber         String?        @db.VarChar(20)
-  lsssign             String?        @db.VarChar(255)
-  created_ts          DateTime       @default(now()) @db.Timestamp(6)
-  created_by          String?        @db.VarChar(255)
-  last_modified_ts    DateTime       @default(now()) @db.Timestamp(6)
-  last_modified_by    String?        @db.VarChar(255)
-  deleted_ts          DateTime?      @db.Timestamp(6)
-  deleted_by          String?        @db.VarChar(255)
-  version             Int            @default(1)
-  role_id             String?        @db.VarChar(255)
-  dirty               String?        @db.VarChar(255)
-  is_admin            Boolean?       @default(false)
-  viewid              Int            @default(autoincrement())
-  sub_ca_name         String?        @db.VarChar(255)
-  phone_code          String?        @db.VarChar(255)
-  organization_status String?        @db.VarChar(255)
+  id                  String    @id @db.VarChar(255)
+  username            String    @db.VarChar(255)
+  email               String    @db.VarChar(255)
+  password            String?   @db.VarChar(255)
+  time_zone_id        String?   @db.VarChar(255)
+  office_id           String?   @db.VarChar(255)
+  user_type           String?   @db.VarChar(255)
+  status              String    @default("ACTIVE") @db.VarChar(255)
+  organization_id     String?   @db.VarChar(255)
+  active_market_id    String?   @db.VarChar(255)
+  agent_user_id       String?   @db.VarChar(255)
+  agent_com_id        String?   @db.VarChar(255)
+  ca_com_id           String?   @db.VarChar(255)
+  ca_user_id          String?   @db.VarChar(255)
+  fullname            String?   @db.VarChar(255)
+  shortname           String?   @db.VarChar(255)
+  phonenumber         String?   @db.VarChar(20)
+  lsssign             String?   @db.VarChar(255)
+  created_ts          DateTime  @default(now()) @db.Timestamp(6)
+  created_by          String?   @db.VarChar(255)
+  last_modified_ts    DateTime  @default(now()) @db.Timestamp(6)
+  last_modified_by    String?   @db.VarChar(255)
+  deleted_ts          DateTime? @db.Timestamp(6)
+  deleted_by          String?   @db.VarChar(255)
+  version             Int       @default(1)
+  role_id             String?   @db.VarChar(255)
+  dirty               String?   @db.VarChar(255)
+  is_admin            Boolean?  @default(false)
+  viewid              Int       @default(autoincrement())
+  sub_ca_name         String?   @db.VarChar(255)
+  phone_code          String?   @db.VarChar(255)
+  organization_status String?   @db.VarChar(255)
   news                news[]
 
   @@unique([user_type, email])
@@ -599,7 +601,7 @@ model news {
   content          String         @db.Text
   startdate        DateTime?      @db.Timestamp(6)
   enddate          DateTime?      @db.Timestamp(6)
-  category_id      String         @db.Uuid 
+  category_id      String         @db.Uuid
   category         news_category? @relation(fields: [category_id], references: [id], onDelete: SetDefault, onUpdate: Cascade)
   status           STATUS         @default(ACTIVE)
   agentViewRule    viewRule       @default(ALL)
@@ -612,7 +614,5 @@ model news {
   deleted_ts       DateTime?      @db.Timestamp(6)
   deleted_by       String?        @db.VarChar(255)
   version          Int            @default(1)
-  users            user_[]         
-
+  users            user_[]
 }
-
